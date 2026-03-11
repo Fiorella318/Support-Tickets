@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { toPng } from 'html-to-image';
 import TicketForm from './components/TicketForm';
 import TicketCard from './components/TicketCard';
-import type { Ticket, Status, Priority } from './types/ticket';
+import { type Ticket, type Status, type Priority } from './types/ticket';
 
 function App() {
   const [tickets, setTickets] = useState<Ticket[]>([]);
@@ -52,7 +52,7 @@ function App() {
     setTickets(prev => prev.map(t => t.id === id ? { ...t, status: newStatus } : t));
   };
 
-  const exportImage = (ref: React.RefObject<HTMLDivElement>, name: string) => {
+  const exportImage = (ref: React.RefObject<HTMLDivElement | null>, name: string) => {
     if (ref.current) {
       toPng(ref.current, { backgroundColor: '#ffffff', style: { padding: '20px' } })
         .then((url) => {
@@ -94,6 +94,7 @@ function App() {
 
         <div style={{ display: 'grid', gridTemplateColumns: '320px 1fr', gap: '30px', marginBottom: '40px' }}>
           
+          {/* Columna Izquierda: Creación y Filtros */}
           <aside style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
             <TicketForm onAddTicket={addTicket} />
             
