@@ -8,5 +8,6 @@ export interface Ticket {
   description: string;
   priority: Priority;
   status: Status;
+  assignedTo: string;
   createdAt: string;
 }
