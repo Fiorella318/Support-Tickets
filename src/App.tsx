@@ -72,7 +72,7 @@ function App() {
     setTickets(prev => prev.map(t => t.id === id ? { ...t, status: newStatus } : t));
   };
 
-  const exportImage = (ref: React.RefObject<HTMLDivElement>, name: string) => {
+  const exportImage = (ref: React.RefObject<HTMLDivElement | null>, name: string) => {
     if (ref.current) {
       toPng(ref.current, { 
         backgroundColor: theme.card, 
