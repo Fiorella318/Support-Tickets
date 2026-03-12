@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { type Ticket, type Priority } from '../types/ticket';
 
-interface Props {
-  onAddTicket: (ticket: Ticket) => void;
+interface Props { 
+  onAddTicket: (ticket: Ticket) => void; 
+  isDark?: boolean; 
 }
 
-export default function TicketForm({ onAddTicket }: Props) {
+export default function TicketForm({ onAddTicket, isDark }: Props) {
   const [subject, setSubject] = useState('');
   const [description, setDescription] = useState('');
   const [priority, setPriority] = useState<Priority>('Medium');
@@ -13,73 +14,123 @@ export default function TicketForm({ onAddTicket }: Props) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!subject || !description || !assignedTo) return alert('Please fill all fields');
-    onAddTicket({
-      id: crypto.randomUUID(), subject, description, priority,
-      status: 'Open', assignedTo, createdAt: new Date().toLocaleString()
+    if (!subject || !description || !assignedTo) return alert('Attention: Please fill all required fields before submitting.');
+    
+    onAddTicket({ 
+      id: crypto.randomUUID(), 
+      subject, 
+      description, 
+      priority, 
+      status: 'Open', 
+      assignedTo, 
+      createdAt: new Date().toLocaleString() 
     });
-    setSubject(''); setDescription(''); setAssignedTo('');
+
+    // Reset de campos
+    setSubject(''); 
+    setDescription(''); 
+    setAssignedTo('');
+    setPriority('Medium');
+  };
+
+  const labelStyle = { 
+    display: 'block', 
+    fontSize: '0.72rem', 
+    fontWeight: 800, 
+    color: isDark ? '#A0AEC0' : '#718096', 
+    marginBottom: '8px', 
+    marginLeft: '5px',
+    letterSpacing: '0.5px'
   };
 
   const inputStyle = {
-    width: '100%',
-    padding: '12px 16px',
-    borderRadius: '12px',
-    border: '1px solid #E2E8F0',
-    fontSize: '0.9rem',
-    outline: 'none',
-    background: '#FFFFFF',
-    marginBottom: '12px',
+    width: '100%', 
+    padding: '14px 18px', 
+    borderRadius: '14px', 
+    marginBottom: '18px',
+    border: isDark ? '1px solid #4A5568' : '1px solid #E2E8F0',
+    background: isDark ? '#1A202C' : '#FFFFFF',
+    color: isDark ? '#F7FAFC' : '#1A202C',
+    fontSize: '0.92rem', 
+    outline: 'none', 
     boxSizing: 'border-box' as 'border-box',
+    transition: 'border-color 0.2s ease',
     fontFamily: 'inherit'
   };
 
   return (
     <div style={{ 
-      background: 'white', 
-      padding: '28px', 
-      borderRadius: '24px', 
-      boxShadow: '0 10px 30px rgba(0,0,0,0.04)',
-      marginBottom: '25px'
+      background: isDark ? '#2D3748' : 'white', 
+      padding: '32px', 
+      borderRadius: '28px', 
+      border: isDark ? '1px solid #4A5568' : 'none',
+      boxShadow: isDark ? '0 10px 40px rgba(0,0,0,0.3)' : '0 10px 30px rgba(0,0,0,0.05)',
+      transition: 'all 0.3s ease'
     }}>
-      <h3 style={{ margin: '0 0 20px 0', color: '#1A202C', fontSize: '1.1rem', fontWeight: 700 }}>
-        Create Pro Ticket
+      <h3 style={{ 
+        margin: '0 0 25px 0', 
+        color: isDark ? '#F7FAFC' : '#1A202C', 
+        fontWeight: 800,
+        fontSize: '1.3rem'
+      }}>
+        Register New Ticket
       </h3>
+      
       <form onSubmit={handleSubmit}>
-        <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#718096', marginBottom: '6px', marginLeft: '4px' }}>AGENT NAME</label>
-        <input style={inputStyle} value={assignedTo} onChange={(e) => setAssignedTo(e.target.value)} placeholder="e.g. Maria G." />
-        
-        <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#718096', marginBottom: '6px', marginLeft: '4px' }}>TICKET SUBJECT</label>
-        <input style={inputStyle} value={subject} onChange={(e) => setSubject(e.target.value)} placeholder="Brief title" />
-        
-        <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#718096', marginBottom: '6px', marginLeft: '4px' }}>PRIORITY LEVEL</label>
-        <select style={inputStyle} value={priority} onChange={(e) => setPriority(e.target.value as Priority)}>
-          <option value="Low">Low Priority</option>
-          <option value="Medium">Medium Priority</option>
-          <option value="High">High Priority</option>
-        </select>
-        
-        <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#718096', marginBottom: '6px', marginLeft: '4px' }}>DESCRIPTION</label>
-        <textarea 
-          style={{ ...inputStyle, minHeight: '100px', resize: 'none' }} 
-          value={description} 
-          onChange={(e) => setDescription(e.target.value)} 
-          placeholder="Describe the issue..." 
+        <label style={labelStyle}>ASSIGNED AGENT</label>
+        <input 
+          style={inputStyle} 
+          value={assignedTo} 
+          onChange={(e) => setAssignedTo(e.target.value)} 
+          placeholder="Enter agent name..." 
         />
         
-        <button type="submit" style={{ 
-          width: '100%',
-          background: '#4299E1', 
-          color: 'white', 
-          border: 'none', 
-          padding: '14px', 
-          borderRadius: '12px', 
-          fontWeight: 700, 
-          cursor: 'pointer',
-          boxShadow: '0 4px 12px rgba(66, 153, 225, 0.3)',
-          transition: 'transform 0.2s'
-        }}>
-          Add to Queue
+        <label style={labelStyle}>TICKET SUBJECT</label>
+        <input 
+          style={inputStyle} 
+          value={subject} 
+          onChange={(e) => setSubject(e.target.value)} 
+          placeholder="What is the issue about?" 
+        />
+        
+        <label style={labelStyle}>PRIORITY LEVEL</label>
+        <select 
+          style={inputStyle} 
+          value={priority} 
+          onChange={(e) => setPriority(e.target.value as any)}
+        >
+          <option value="Low">Low - Minor Issue</option>
+          <option value="Medium">Medium - Standard</option>
+          <option value="High">High - Urgent Case</option>
+        </select>
+        
+        <label style={labelStyle}>DETAILED DESCRIPTION</label>
+        <textarea 
+          style={{ ...inputStyle, minHeight: '120px', resize: 'none' }} 
+          value={description} 
+          onChange={(e) => setDescription(e.target.value)} 
+          placeholder="Provide more context about the support request..." 
+        />
+        
+        <button 
+          type="submit" 
+          style={{ 
+            width: '100%', 
+            background: '#3B82F6', 
+            color: 'white', 
+            border: 'none', 
+            padding: '16px', 
+            borderRadius: '14px', 
+            fontWeight: 800, 
+            cursor: 'pointer',
+            fontSize: '1rem',
+            boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)',
+            transition: 'transform 0.2s ease, background 0.2s ease'
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.background = '#2563EB'}
+          onMouseLeave={(e) => e.currentTarget.style.background = '#3B82F6'}
+        >
+          Create Support Ticket
         </button>
       </form>
     </div>

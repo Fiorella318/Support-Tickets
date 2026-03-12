@@ -8,27 +8,47 @@ function App() {
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [filterPriority, setFilterPriority] = useState<'All' | Priority>('All');
   const [isLoaded, setIsLoaded] = useState(false);
+  const [darkMode, setDarkMode] = useState(false);
 
   const priorityBoxRef = useRef<HTMLDivElement>(null);
   const statusBoxRef = useRef<HTMLDivElement>(null);
 
-  // Carga inicial segura para evitar errores de hidratación en Vercel
   useEffect(() => {
-    const saved = localStorage.getItem('pro_tickets_v4');
+    const saved = localStorage.getItem('pro_tickets_final');
+    const savedTheme = localStorage.getItem('theme_dark');
     if (saved) setTickets(JSON.parse(saved));
+    if (savedTheme) setDarkMode(savedTheme === 'true');
     setIsLoaded(true);
   }, []);
 
+  // ELIMINA EL BORDE BLANCO DE LA PANTALLA
+  useEffect(() => {
+    document.body.style.margin = '0';
+    document.body.style.padding = '0';
+    document.body.style.backgroundColor = darkMode ? '#1A202C' : '#F8FAFC';
+    document.body.style.transition = 'background-color 0.3s ease';
+  }, [darkMode]);
+
   useEffect(() => {
     if (isLoaded) {
-      localStorage.setItem('pro_tickets_v4', JSON.stringify(tickets));
+      localStorage.setItem('pro_tickets_final', JSON.stringify(tickets));
+      localStorage.setItem('theme_dark', darkMode.toString());
     }
-  }, [tickets, isLoaded]);
+  }, [tickets, isLoaded, darkMode]);
+
+  const theme = {
+    bg: darkMode ? '#1A202C' : '#F8FAFC',
+    card: darkMode ? '#2D3748' : '#FFFFFF',
+    text: darkMode ? '#F7FAFC' : '#1A202C',
+    subtext: darkMode ? '#A0AEC0' : '#718096',
+    border: darkMode ? '#4A5568' : '#E2E8F0',
+    kanbanBg: darkMode ? '#262d3d' : '#EDF2F7'
+  };
 
   const addTicket = (t: Ticket) => setTickets([...tickets, t]);
   
   const deleteTicket = (id: string) => {
-    if (window.confirm('¿Eliminar este ticket?')) {
+    if (window.confirm('¿Estás seguro de que deseas eliminar este ticket permanentemente?')) {
       setTickets(tickets.filter(t => t.id !== id));
     }
   };
@@ -52,15 +72,18 @@ function App() {
     setTickets(prev => prev.map(t => t.id === id ? { ...t, status: newStatus } : t));
   };
 
-  const exportImage = (ref: React.RefObject<HTMLDivElement | null>, name: string) => {
+  const exportImage = (ref: React.RefObject<HTMLDivElement>, name: string) => {
     if (ref.current) {
-      toPng(ref.current, { backgroundColor: '#ffffff', style: { padding: '20px' } })
-        .then((url) => {
-          const link = document.createElement('a');
-          link.href = url;
-          link.download = `${name}.png`;
-          link.click();
-        });
+      toPng(ref.current, { 
+        backgroundColor: theme.card, 
+        style: { padding: '30px' } 
+      })
+      .then((url) => {
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `reporte-${name}.png`;
+        link.click();
+      });
     }
   };
 
@@ -73,89 +96,174 @@ function App() {
   const getS = (s: Status) => tickets.filter(t => t.status === s).length;
   const pct = (c: number) => total > 0 ? Math.round((c / total) * 100) : 0;
 
-  if (!isLoaded) return null; // Evita parpadeos en el despliegue
+  if (!isLoaded) return null;
 
   return (
-    <div style={{ backgroundColor: '#F7FAFC', minHeight: '100vh', padding: '40px 20px', fontFamily: '"Inter", sans-serif' }}>
-      <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+    <div style={{ 
+      backgroundColor: theme.bg, 
+      minHeight: '100vh', 
+      padding: '40px 20px', 
+      color: theme.text, 
+      transition: 'all 0.3s ease',
+      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif'
+    }}>
+      <div style={{ maxWidth: '1240px', margin: '0 auto' }}>
         
-        {/* Header Premium */}
-        <div style={{ 
-          display: 'flex', justifyContent: 'space-between', alignItems: 'center', 
-          background: 'white', padding: '20px 30px', borderRadius: '16px', 
-          marginBottom: '35px', boxShadow: '0 4px 20px rgba(0,0,0,0.03)' 
+        <header style={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center', 
+          background: theme.card, 
+          padding: '24px 35px', 
+          borderRadius: '20px', 
+          marginBottom: '40px', 
+          border: `1px solid ${theme.border}`,
+          boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
         }}>
-          <h1 style={{ margin: 0, fontSize: '1.5rem', color: '#1A202C', fontWeight: 800 }}>Pro Support Dashboard</h1>
-          <div style={{ display: 'flex', gap: '12px' }}>
-            <button onClick={() => exportImage(priorityBoxRef, 'prioridades')} style={{ cursor: 'pointer', padding: '10px 18px', borderRadius: '12px', border: '1px solid #E2E8F0', background: 'white', fontWeight: 600 }}>📊 Export Priority</button>
-            <button onClick={() => exportImage(statusBoxRef, 'estados')} style={{ cursor: 'pointer', padding: '10px 18px', borderRadius: '12px', border: '1px solid #E2E8F0', background: 'white', fontWeight: 600 }}>📈 Export Status</button>
+          <div>
+            <h1 style={{ margin: 0, fontSize: '1.8rem', fontWeight: 800, letterSpacing: '-0.5px' }}>Pro Support Dashboard</h1>
+            <p style={{ margin: '5px 0 0 0', color: theme.subtext, fontSize: '0.9rem' }}>Manage and monitor your support tickets</p>
           </div>
-        </div>
+          <div style={{ display: 'flex', gap: '15px' }}>
+            <button 
+              onClick={() => setDarkMode(!darkMode)} 
+              style={{ 
+                cursor: 'pointer', 
+                padding: '12px', 
+                borderRadius: '14px', 
+                border: `1px solid ${theme.border}`, 
+                background: theme.card,
+                fontSize: '1.2rem',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+            >
+              {darkMode ? '☀️' : '🌙'}
+            </button>
+          </div>
+        </header>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '320px 1fr', gap: '30px', marginBottom: '40px' }}>
-          
-          {/* Columna Izquierda: Creación y Filtros */}
-          <aside style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            <TicketForm onAddTicket={addTicket} />
+        <div style={{ display: 'grid', gridTemplateColumns: '340px 1fr', gap: '35px', marginBottom: '50px' }}>
+          <aside style={{ display: 'flex', flexDirection: 'column', gap: '25px' }}>
+            <TicketForm onAddTicket={addTicket} isDark={darkMode} />
             
-            {/* Sección de Filtros Estilo Imagen */}
-            <div style={{ background: 'white', padding: '24px', borderRadius: '24px', boxShadow: '0 10px 30px rgba(0,0,0,0.04)' }}>
-              <h3 style={{ margin: '0 0 15px 0', color: '#1A202C', fontSize: '1rem', fontWeight: 700 }}>Filters</h3>
+            <div style={{ 
+              background: theme.card, 
+              padding: '28px', 
+              borderRadius: '24px', 
+              border: `1px solid ${theme.border}`,
+              boxShadow: '0 4px 15px rgba(0,0,0,0.02)'
+            }}>
+              <h3 style={{ margin: '0 0 20px 0', fontSize: '1.1rem', fontWeight: 700 }}>Quick Filters</h3>
+              <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 800, color: theme.subtext, marginBottom: '8px', marginLeft: '5px' }}>
+                PRIORITY STATUS
+              </label>
               <select 
                 value={filterPriority} 
-                onChange={(e) => setFilterPriority(e.target.value as any)}
-                style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid #E2E8F0', background: '#F8FAFC', fontWeight: 600 }}
+                onChange={(e) => setFilterPriority(e.target.value as any)} 
+                style={{ 
+                  width: '100%', 
+                  padding: '14px', 
+                  borderRadius: '12px', 
+                  border: `1px solid ${theme.border}`, 
+                  background: theme.bg, 
+                  color: theme.text,
+                  fontWeight: 600,
+                  outline: 'none'
+                }}
               >
-                <option value="All">All Priorities</option>
-                <option value="High">High Only</option>
-                <option value="Medium">Medium Only</option>
-                <option value="Low">Low Only</option>
+                <option value="All">All Tickets</option>
+                <option value="High">🔴 High Priority</option>
+                <option value="Medium">🟠 Medium Priority</option>
+                <option value="Low">🔵 Low Priority</option>
               </select>
             </div>
           </aside>
           
-          <main style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px' }}>
+          <main style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '25px' }}>
             {(['Open', 'In Progress', 'Resolved'] as Status[]).map(status => (
-              <div key={status} onDragOver={e => e.preventDefault()} onDrop={e => handleDrop(e, status)} style={{ background: '#EDF2F7', padding: '20px', borderRadius: '20px', minHeight: '600px' }}>
-                <h3 style={{ fontSize: '0.85rem', color: '#4A5568', fontWeight: 800, marginBottom: '20px' }}>{status.toUpperCase()}</h3>
-                {filteredTickets.filter(t => t.status === status).map(t => (
-                  <TicketCard key={t.id} ticket={t} onStatusChange={updateStatus} onDeleteTicket={deleteTicket} />
-                ))}
+              <div 
+                key={status} 
+                onDragOver={e => e.preventDefault()} 
+                onDrop={e => handleDrop(e, status)} 
+                style={{ 
+                  background: theme.kanbanBg, 
+                  padding: '25px 20px', 
+                  borderRadius: '24px', 
+                  minHeight: '700px', 
+                  border: `1px solid ${theme.border}`,
+                  display: 'flex',
+                  flexDirection: 'column'
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px', padding: '0 10px' }}>
+                  <h3 style={{ fontSize: '0.8rem', color: theme.subtext, fontWeight: 800, letterSpacing: '1px' }}>
+                    {status.toUpperCase()}
+                  </h3>
+                  <span style={{ background: theme.border, padding: '4px 10px', borderRadius: '10px', fontSize: '0.75rem', fontWeight: 700 }}>
+                    {tickets.filter(t => t.status === status).length}
+                  </span>
+                </div>
+                <div style={{ flex: 1 }}>
+                  {filteredTickets.filter(t => t.status === status).map(t => (
+                    <TicketCard 
+                      key={t.id} 
+                      ticket={t} 
+                      onStatusChange={updateStatus} 
+                      onDeleteTicket={deleteTicket} 
+                      isDark={darkMode} 
+                    />
+                  ))}
+                </div>
               </div>
             ))}
           </main>
         </div>
 
-        {/* Gráficos con lógica de ocultar 0% */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px' }}>
-          <div ref={priorityBoxRef} style={{ background: 'white', padding: '40px', borderRadius: '24px', textAlign: 'center', boxShadow: '0 10px 30px rgba(0,0,0,0.04)' }}>
-            <h3 style={{ marginBottom: '30px', fontWeight: 700 }}>Priority Distribution</h3>
-            <div style={{ position: 'relative', width: '200px', height: '200px', margin: '0 auto' }}>
-                <svg viewBox="0 0 36 36" style={{ width: '100%', transform: 'rotate(-90deg)' }}>
-                  <circle cx="18" cy="18" r="16" fill="none" stroke="#F7FAFC" strokeWidth="3.5" />
-                  {pct(getP('High')) > 0 && <circle cx="18" cy="18" r="16" fill="none" stroke="#FF4D4D" strokeWidth="3.5" strokeDasharray={`${pct(getP('High'))} 100`} strokeLinecap="round" />}
-                  {pct(getP('Medium')) > 0 && <circle cx="18" cy="18" r="16" fill="none" stroke="#FFA500" strokeWidth="3.5" strokeDasharray={`${pct(getP('Medium'))} 100`} strokeDashoffset={`-${pct(getP('High'))}`} strokeLinecap="round" />}
-                  {pct(getP('Low')) > 0 && <circle cx="18" cy="18" r="16" fill="none" stroke="#4DA6FF" strokeWidth="3.5" strokeDasharray={`${pct(getP('Low'))} 100`} strokeDashoffset={`-${pct(getP('High')) + pct(getP('Medium'))}`} strokeLinecap="round" />}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '35px' }}>
+          <div ref={priorityBoxRef} style={{ background: theme.card, padding: '45px', borderRadius: '28px', border: `1px solid ${theme.border}`, textAlign: 'center' }}>
+            <h3 style={{ marginBottom: '35px', fontWeight: 700, fontSize: '1.2rem' }}>Priority Distribution</h3>
+            <div style={{ width: '200px', height: '200px', margin: '0 auto', position: 'relative' }}>
+                <svg viewBox="0 0 36 36" style={{ transform: 'rotate(-90deg)', width: '100%' }}>
+                  <circle cx="18" cy="18" r="16" fill="none" stroke={darkMode ? '#334155' : '#F7FAFC'} strokeWidth="3.5" />
+                  <circle cx="18" cy="18" r="16" fill="none" stroke="#FF4D4D" strokeWidth="3.5" strokeDasharray={`${pct(getP('High'))} 100`} strokeLinecap="round" />
+                  <circle cx="18" cy="18" r="16" fill="none" stroke="#FFA500" strokeWidth="3.5" strokeDasharray={`${pct(getP('Medium'))} 100`} strokeDashoffset={`-${pct(getP('High'))}`} strokeLinecap="round" />
+                  <circle cx="18" cy="18" r="16" fill="none" stroke="#4DA6FF" strokeWidth="3.5" strokeDasharray={`${pct(getP('Low'))} 100`} strokeDashoffset={`-${pct(getP('High')) + pct(getP('Medium'))}`} strokeLinecap="round" />
                 </svg>
                 <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}>
-                    <div style={{ fontSize: '1.8rem', fontWeight: 800 }}>{total}</div>
-                    <div style={{ fontSize: '0.7rem', color: '#A0AEC0' }}>TICKETS</div>
+                  <span style={{ fontSize: '2rem', fontWeight: 800 }}>{total}</span>
                 </div>
             </div>
-            <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'center', gap: '10px' }}>
-              {pct(getP('High')) > 0 && <span style={{ color: '#FF4D4D', fontWeight: 700 }}>● {pct(getP('High'))}%</span>}
-              {pct(getP('Medium')) > 0 && <span style={{ color: '#FFA500', fontWeight: 700 }}>● {pct(getP('Medium'))}%</span>}
-              {pct(getP('Low')) > 0 && <span style={{ color: '#4DA6FF', fontWeight: 700 }}>● {pct(getP('Low'))}%</span>}
+            <div style={{ marginTop: '30px', display: 'flex', justifyContent: 'center', gap: '20px', fontSize: '0.85rem' }}>
+              <span style={{ color: '#FF4D4D', fontWeight: 700 }}>● High</span>
+              <span style={{ color: '#FFA500', fontWeight: 700 }}>● Medium</span>
+              <span style={{ color: '#4DA6FF', fontWeight: 700 }}>● Low</span>
             </div>
+            <button 
+              onClick={() => exportImage(priorityBoxRef, 'prioridad')} 
+              style={{ marginTop: '30px', padding: '12px 25px', borderRadius: '12px', border: `1px solid ${theme.border}`, background: theme.bg, color: theme.subtext, fontWeight: 700, cursor: 'pointer' }}
+            >
+              Download Chart
+            </button>
           </div>
 
-          <div ref={statusBoxRef} style={{ background: 'white', padding: '40px', borderRadius: '24px', textAlign: 'center', boxShadow: '0 10px 30px rgba(0,0,0,0.04)' }}>
-            <h3 style={{ marginBottom: '30px', fontWeight: 700 }}>Tasks by Status</h3>
-            <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-around', height: '150px', borderBottom: '2px solid #F7FAFC' }}>
-              <div style={{ width: '40px', height: `${pct(getS('Open'))}%`, background: '#6B46C1', borderRadius: '8px 8px 0 0' }} />
-              <div style={{ width: '40px', height: `${pct(getS('In Progress'))}%`, background: 'rgba(107, 70, 193, 0.5)', borderRadius: '8px 8px 0 0' }} />
-              <div style={{ width: '40px', height: `${pct(getS('Resolved'))}%`, background: 'rgba(107, 70, 193, 0.2)', borderRadius: '8px 8px 0 0' }} />
+          <div ref={statusBoxRef} style={{ background: theme.card, padding: '45px', borderRadius: '28px', border: `1px solid ${theme.border}`, textAlign: 'center' }}>
+            <h3 style={{ marginBottom: '35px', fontWeight: 700, fontSize: '1.2rem' }}>Workflow Analysis</h3>
+            <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-around', height: '200px', borderBottom: `2px solid ${theme.border}`, paddingBottom: '10px' }}>
+                <div style={{ width: '50px', height: `${pct(getS('Open'))}%`, background: '#6B46C1', borderRadius: '10px 10px 0 0', transition: 'height 0.5s ease' }} />
+                <div style={{ width: '50px', height: `${pct(getS('In Progress'))}%`, background: '#9F7AEA', borderRadius: '10px 10px 0 0', transition: 'height 0.5s ease' }} />
+                <div style={{ width: '50px', height: `${pct(getS('Resolved'))}%`, background: '#B794F4', borderRadius: '10px 10px 0 0', transition: 'height 0.5s ease' }} />
             </div>
+            <div style={{ display: 'flex', justifyContent: 'space-around', marginTop: '20px', fontWeight: 800, color: theme.subtext, fontSize: '0.75rem' }}>
+              <span>OPEN</span><span>IN PROGRESS</span><span>RESOLVED</span>
+            </div>
+            <button 
+              onClick={() => exportImage(statusBoxRef, 'estados')} 
+              style={{ marginTop: '30px', padding: '12px 25px', borderRadius: '12px', border: `1px solid ${theme.border}`, background: theme.bg, color: theme.subtext, fontWeight: 700, cursor: 'pointer' }}
+            >
+              Download Report
+            </button>
           </div>
         </div>
       </div>
