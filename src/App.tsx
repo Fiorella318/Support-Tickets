@@ -82,17 +82,24 @@ function App() {
     downloadAnchorNode.remove();
   };
 
-  const exportImage = (ref: React.RefObject<HTMLDivElement>, name: string) => {
-    if (ref.current) {
-      toPng(ref.current, { backgroundColor: theme.card, style: { padding: '30px' } })
-      .then((url) => {
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `reporte-${name}.png`;
-        link.click();
-      });
-    }
-  };
+  const exportImage = (ref: React.RefObject<HTMLDivElement | null>, name: string) => {
+  // Verificamos explícitamente que ref y ref.current no sean nulos
+  if (ref && ref.current) {
+    toPng(ref.current, { 
+      backgroundColor: theme.card, 
+      style: { padding: '30px' } 
+    })
+    .then((url) => {
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `reporte-${name}.png`;
+      link.click();
+    })
+    .catch((err) => {
+      console.error('Error exporting image:', err);
+    });
+  }
+};
 
   const filteredTickets = filterPriority === 'All' ? tickets : tickets.filter(t => t.priority === filterPriority);
   const total = tickets.length;
