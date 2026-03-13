@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { toPng } from 'html-to-image';
 import TicketForm from './components/TicketForm';
 import TicketCard from './components/TicketCard';
-import { type Ticket, type Status, type Priority } from './types/ticket';
+import { type Ticket, type Status, type Priority } from './types/ticket'; 
 
 function App() {
   const [tickets, setTickets] = useState<Ticket[]>([]);

@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { type Ticket, type Priority } from '../types/ticket';
+import React, { useState } from 'react';
+import { type Ticket, type Priority } from '../types/ticket'; // RUTA CORREGIDA con ../
 
 interface Props { 
   onAddTicket: (ticket: Ticket) => void; 
