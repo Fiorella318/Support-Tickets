@@ -41,7 +41,8 @@ function App() {
     text: darkMode ? '#F7FAFC' : '#1A202C',
     subtext: darkMode ? '#A0AEC0' : '#718096',
     border: darkMode ? '#4A5568' : '#E2E8F0',
-    kanbanBg: darkMode ? '#262d3d' : '#EDF2F7'
+    kanbanBg: darkMode ? '#262d3d' : '#EDF2F7',
+    accent: darkMode ? '#6B46C1' : '#3182CE'
   };
 
   const addTicket = (t: Ticket) => setTickets([...tickets, t]);
@@ -83,21 +84,15 @@ function App() {
   };
 
   const exportImage = (ref: React.RefObject<HTMLDivElement | null>, name: string) => {
-  // Verificamos explícitamente que ref y ref.current no sean nulos
   if (ref && ref.current) {
-    toPng(ref.current, { 
-      backgroundColor: theme.card, 
-      style: { padding: '30px' } 
-    })
-    .then((url) => {
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `reporte-${name}.png`;
-      link.click();
-    })
-    .catch((err) => {
-      console.error('Error exporting image:', err);
-    });
+    toPng(ref.current, { backgroundColor: theme.card, style: { padding: '30px' } })
+      .then((url) => {
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `reporte-${name}.png`;
+        link.click();
+      })
+      .catch((err) => console.error(err));
   }
 };
 
@@ -186,7 +181,26 @@ function App() {
               <span style={{ color: '#FFA500', fontWeight: 700 }}>● Medium {pct(getP('Medium'))}%</span>
               <span style={{ color: '#4DA6FF', fontWeight: 700 }}>● Low {pct(getP('Low'))}%</span>
             </div>
+            <button 
+            onClick={() => exportImage(priorityBoxRef, 'prioridad')}
+            style={{
+              marginTop: '20px',
+              padding: '8px 16px',
+              backgroundColor: theme.accent,
+              color: 'white',
+              border: 'none',
+              borderRadius: '6px',
+              cursor: 'pointer',
+              fontSize: '0.85rem',
+              fontWeight: '600',
+              width: '100%'
+            }}
+          >
+            📥 Download Priority Chart
+          </button>
           </div>
+
+          
 
           <div ref={statusBoxRef} style={{ background: theme.card, padding: '45px', borderRadius: '28px', border: `1px solid ${theme.border}`, textAlign: 'center' }}>
             <h3 style={{ marginBottom: '35px', fontWeight: 700 }}>Workflow Analysis</h3>
@@ -200,7 +214,26 @@ function App() {
               <span>PROGRESS {pct(getS('In Progress'))}%</span>
               <span>RESOLVED {pct(getS('Resolved'))}%</span>
             </div>
+            <button 
+  onClick={() => exportImage(statusBoxRef, 'workflow')}
+  style={{
+    marginTop: '20px',
+    padding: '8px 16px',
+    backgroundColor: theme.accent,
+    color: 'white',
+    border: 'none',
+    borderRadius: '6px',
+    cursor: 'pointer',
+    fontSize: '0.85rem',
+    fontWeight: '600',
+    width: '100%'
+  }}
+>
+  📥 Download Workflow Chart
+</button>
           </div>
+
+          
         </div>
       </div>
     </div>
