@@ -170,7 +170,7 @@ function App() {
                     {getP('Low') > 0 && <circle cx="18" cy="18" r="16" fill="none" stroke="#4DA6FF" strokeWidth="3.5" strokeDasharray={`${pct(getP('Low'))} 100`} strokeDashoffset={`-${pct(getP('High')) + pct(getP('Medium'))}`} strokeLinecap="round" />}
                   </svg>
                 ) : (
-                  <div style={{ width: '100%', height: '100%', borderRadius: '50%', border: `2px dashed ${theme.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: theme.subtext }}>No Data</div>
+                  <div style={{ width: '100%', height: '100%', borderRadius: '50%', border: `2px dashed ${theme.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: theme.subtext }}></div>
                 )}
                 <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}>
                   <span style={{ fontSize: '2rem', fontWeight: 800 }}>{total}</span>
